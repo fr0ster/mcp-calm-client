@@ -1,0 +1,66 @@
+{
+  "name": "@mcp-abap-adt/calm-client",
+  "version": "0.1.0",
+  "description": "SAP Cloud ALM OData/REST client library for MCP ABAP ADT ecosystem",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md"
+  ],
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.test.integration.tsbuildinfo",
+    "build": "npm run --silent clean && npx biome check src --diagnostic-level=error && npx tsc -p tsconfig.json",
+    "build:fast": "npx tsc -p tsconfig.json",
+    "lint": "npx biome check --write src",
+    "lint:check": "npx biome check src",
+    "format": "npx biome format --write src",
+    "test": "npx jest --runInBand",
+    "test:check": "npx tsc --noEmit --project tsconfig.test.integration.json",
+    "test:type-check": "npm run test:check",
+    "prepublishOnly": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "@mcp-abap-adt/interfaces": "^7.1.0"
+  },
+  "dependencies": {
+    "axios": "^1.13.6"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.4",
+    "@mcp-abap-adt/auth-broker": "^1.0.5",
+    "@mcp-abap-adt/auth-providers": "^1.0.5",
+    "@mcp-abap-adt/auth-stores": "^1.0.4",
+    "@mcp-abap-adt/interfaces": "^7.1.0",
+    "@mcp-abap-adt/logger": "^0.1.4",
+    "@types/jest": "^30.0.0",
+    "@types/node": "^25.3.3",
+    "dotenv": "^17.3.1",
+    "jest": "^30.0.5",
+    "ts-jest": "^29.4.1",
+    "typescript": "^5.9.3"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fr0ster/mcp-calm-client.git"
+  },
+  "license": "MIT",
+  "keywords": [
+    "sap",
+    "cloud-alm",
+    "odata",
+    "rest",
+    "abap",
+    "mcp"
+  ]
+}

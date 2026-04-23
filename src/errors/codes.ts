@@ -1,0 +1,11 @@
+export const CALM_API_ERROR_CODES = {
+  HTTP_ERROR: 'HTTP_ERROR',
+  ODATA_ERROR: 'ODATA_ERROR',
+  NOT_FOUND: 'NOT_FOUND',
+  JSON_PARSE: 'JSON_PARSE',
+  NETWORK: 'NETWORK',
+  UNKNOWN: 'UNKNOWN',
+} as const;
+
+export type CalmApiErrorCode =
+  (typeof CALM_API_ERROR_CODES)[keyof typeof CALM_API_ERROR_CODES];
