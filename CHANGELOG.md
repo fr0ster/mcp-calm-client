@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — 2026-04-23
+## 0.1.0 — 2026-04-24
 
 Initial usable release — all 9 Cloud ALM services are covered with unit-tested
 client handlers. Integration testing against a live tenant is the next step.
