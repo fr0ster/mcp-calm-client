@@ -3,7 +3,10 @@ import { CalmAnalytics } from '../core/analytics/CalmAnalytics';
 import { CalmDocument } from '../core/document/CalmDocument';
 import { CalmFeature } from '../core/feature/CalmFeature';
 import { CalmHierarchy } from '../core/hierarchy/CalmHierarchy';
+import { CalmLog } from '../core/log/CalmLog';
 import { CalmProcessMonitoring } from '../core/processMonitoring/CalmProcessMonitoring';
+import { CalmProject } from '../core/project/CalmProject';
+import { CalmTask } from '../core/task/CalmTask';
 import { CalmTestCase } from '../core/testCase/CalmTestCase';
 
 /**
@@ -47,5 +50,17 @@ export class CalmClient {
 
   getProcessMonitoring(): CalmProcessMonitoring {
     return new CalmProcessMonitoring(this.connection);
+  }
+
+  getTasks(): CalmTask {
+    return new CalmTask(this.connection);
+  }
+
+  getProjects(): CalmProject {
+    return new CalmProject(this.connection);
+  }
+
+  getLogs(): CalmLog {
+    return new CalmLog(this.connection);
   }
 }
