@@ -212,6 +212,10 @@ new CalmConnection({ baseUrl: '…', tokenRefresher, apiPrefix: '' });
 - Integration tests — see [docs/TESTING.md](docs/TESTING.md) for the exact
   credentials and fixture data required per service before running against
   a live tenant or the SAP API Business Hub sandbox.
+- Need to request tenant access from your Cloud ALM admin?
+  [`docs/ADMIN-REQUEST-TEMPLATE.md`](docs/ADMIN-REQUEST-TEMPLATE.md) is
+  a copy-paste email template covering the service binding, scopes, and
+  sandbox-project asks.
 
 ## Development (running from a fresh clone)
 

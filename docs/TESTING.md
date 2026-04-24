@@ -58,6 +58,11 @@ Source values from your **XSUAA service key** (BTP Cockpit → Instance → Serv
 
 Regions: `eu10`, `eu20`, `us10`, `ap10`, `jp10`, `ca10`, `eu11`, `cn20`.
 
+**Don't have a service key yet?** Use
+[`docs/ADMIN-REQUEST-TEMPLATE.md`](ADMIN-REQUEST-TEMPLATE.md) — a
+copy-paste email template for your Cloud ALM admin that lists exactly
+which binding, scopes, and fixtures the library needs.
+
 #### Sandbox mode (SAP API Business Hub)
 
 ```bash
