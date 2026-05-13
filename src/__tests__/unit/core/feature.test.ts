@@ -35,23 +35,22 @@ function mockConnection(respond: (req: IRecordedRequest) => unknown): {
 }
 
 describe('CalmFeature', () => {
-  test('list issues GET /Features with no query', async () => {
+  test('list puts projectId on the URL, no OData query', async () => {
     const { connection, calls } = mockConnection(() => ({ value: [] }));
     const f = new CalmFeature(connection);
-    await f.list();
+    await f.list('P1');
     expect(calls[0]).toMatchObject({
       service: 'features',
       method: 'GET',
-      url: '/Features',
+      url: '/Features?projectId=P1',
     });
   });
 
-  test('list with ODataQuery appends query string', async () => {
+  test('list layers ODataQuery after projectId', async () => {
     const { connection, calls } = mockConnection(() => ({ value: [] }));
     const f = new CalmFeature(connection);
-    await f.list(ODataQuery.new().filter("projectId eq 'P1'").top(10));
-    expect(calls[0].url).toMatch(/^\/Features\?\$filter=/);
-    expect(calls[0].url).toContain('$top=10');
+    await f.list('P1', ODataQuery.new().top(10));
+    expect(calls[0].url).toBe('/Features?projectId=P1&$top=10');
   });
 
   test('get uses uuid with percent-encoding', async () => {
@@ -69,7 +68,7 @@ describe('CalmFeature', () => {
       return { value: [{ uuid: 'abc', displayId: "o'malley" }] };
     });
     const f = new CalmFeature(connection);
-    const res = await f.getByDisplayId("o'malley");
+    const res = await f.getByDisplayId('P1', "o'malley");
     expect(res.uuid).toBe('abc');
     expect(capturedUrl).toContain('displayId%20eq%20%27o%27%27malley%27');
   });
@@ -77,10 +76,10 @@ describe('CalmFeature', () => {
   test('getByDisplayId throws CalmApiError(404) when empty collection', async () => {
     const { connection } = mockConnection(() => ({ value: [] }));
     const f = new CalmFeature(connection);
-    await expect(f.getByDisplayId('missing')).rejects.toBeInstanceOf(
+    await expect(f.getByDisplayId('P1', 'missing')).rejects.toBeInstanceOf(
       CalmApiError,
     );
-    await expect(f.getByDisplayId('missing')).rejects.toMatchObject({
+    await expect(f.getByDisplayId('P1', 'missing')).rejects.toMatchObject({
       status: 404,
       code: 'NOT_FOUND',
     });
@@ -102,7 +101,7 @@ describe('CalmFeature', () => {
       return { uuid: 'uuid-9', externalReferences: [] };
     });
     const f = new CalmFeature(connection);
-    await f.getByDisplayIdWithExpand('6-123', ['externalReferences']);
+    await f.getByDisplayIdWithExpand('P1', '6-123', ['externalReferences']);
     expect(calls).toHaveLength(2);
     expect(calls[0].url).toContain(
       "displayId%20eq%20'6-123'".replace(/'/g, '%27'),

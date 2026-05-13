@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/calm-client",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "SAP Cloud ALM OData/REST client library for MCP ABAP ADT ecosystem",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

@@ -40,16 +40,19 @@ export class CalmFeature {
     this.connection = connection;
   }
 
-  list(query?: ODataQuery): Promise<IODataCollection<IFeature>> {
-    return listFeatures(this.connection, query);
+  list(
+    projectId: string,
+    query?: ODataQuery,
+  ): Promise<IODataCollection<IFeature>> {
+    return listFeatures(this.connection, projectId, query);
   }
 
   get(uuid: string): Promise<IFeature> {
     return getFeature(this.connection, uuid);
   }
 
-  getByDisplayId(displayId: string): Promise<IFeature> {
-    return getFeatureByDisplayId(this.connection, displayId);
+  getByDisplayId(projectId: string, displayId: string): Promise<IFeature> {
+    return getFeatureByDisplayId(this.connection, projectId, displayId);
   }
 
   getWithExpand<T = unknown>(uuid: string, expand: string[]): Promise<T> {
@@ -57,11 +60,13 @@ export class CalmFeature {
   }
 
   getByDisplayIdWithExpand<T = unknown>(
+    projectId: string,
     displayId: string,
     expand: string[],
   ): Promise<T> {
     return getFeatureByDisplayIdWithExpand<T>(
       this.connection,
+      projectId,
       displayId,
       expand,
     );

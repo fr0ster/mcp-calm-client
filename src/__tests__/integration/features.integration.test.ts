@@ -15,8 +15,11 @@ if (!built) {
   const calm = new CalmClient(connection);
 
   describe('integration: features', () => {
-    test('list top 1 — shape is an OData collection', async () => {
-      const result = await calm.getFeatures().list(ODataQuery.new().top(1));
+    const itHasProject = fixtures.projectId ? test : test.skip;
+    itHasProject('list top 1 — shape is an OData collection', async () => {
+      const result = await calm
+        .getFeatures()
+        .list(fixtures.projectId as string, ODataQuery.new().top(1));
       expect(result).toHaveProperty('value');
       expect(Array.isArray(result.value)).toBe(true);
     });
@@ -43,13 +46,17 @@ if (!built) {
       },
     );
 
-    const itHasDisplayId = fixtures.featureDisplayId ? test : test.skip;
+    const itHasDisplayId =
+      fixtures.featureDisplayId && fixtures.projectId ? test : test.skip;
     itHasDisplayId(
       'getByDisplayId(CALM_TEST_FEATURE_DISPLAY_ID) — returns matching feature',
       async () => {
         const feature = await calm
           .getFeatures()
-          .getByDisplayId(fixtures.featureDisplayId as string);
+          .getByDisplayId(
+            fixtures.projectId as string,
+            fixtures.featureDisplayId as string,
+          );
         expect(feature.displayId).toBe(fixtures.featureDisplayId);
       },
     );

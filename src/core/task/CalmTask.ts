@@ -33,8 +33,11 @@ export class CalmTask {
     this.connection = connection;
   }
 
-  list(query?: ODataQuery): Promise<IODataCollection<ITask>> {
-    return listTasks(this.connection, query);
+  list(
+    projectId: string,
+    query?: ODataQuery,
+  ): Promise<IODataCollection<ITask>> {
+    return listTasks(this.connection, projectId, query);
   }
 
   get(id: string): Promise<ITask> {
