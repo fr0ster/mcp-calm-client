@@ -1,5 +1,46 @@
 # Changelog
 
+## 0.3.0 — 2026-05-13
+
+### Fixed (BREAKING)
+
+- **`CalmTask.list` / `CalmFeature.list`** now require `projectId` as
+  the first positional argument; the optional `ODataQuery` is the
+  second. Both endpoints (`/tasks` and `/Features`) are exposed by
+  Cloud ALM as Spring controllers with `@RequestParam UUID projectId`,
+  so `projectId` must travel as a plain HTTP query parameter — putting
+  it into `$filter` returns HTTP 400. See issue #3 (extends the
+  pattern fixed for `listDeliverables` / `listWorkstreams` in #1).
+- **`CalmFeature.getByDisplayId` / `getByDisplayIdWithExpand`** now
+  require `projectId` as the first positional argument. Both delegate
+  through `listFeatures` and inherit the same contract; displayId
+  values like `6-123` are themselves project-scoped, so this matches
+  the underlying data model.
+
+  Migration:
+
+  ```ts
+  // before (0.2.x)
+  await client.getTasks().list(
+    ODataQuery.new().filter("projectId eq 'P1'").top(20),
+  );
+  await client.getFeatures().getByDisplayId('6-123');
+
+  // after (0.3.0)
+  await client.getTasks().list('P1', ODataQuery.new().top(20));
+  await client.getFeatures().getByDisplayId('P1', '6-123');
+  ```
+
+  URLs produced: `/tasks?projectId=P1&$top=20`,
+  `/Features?projectId=P1&$filter=displayId%20eq%20'6-123'&$top=1`.
+
+### Added
+
+- **`src/core/_internal/url.ts`** — shared `odataAfterProjectId`
+  helper now used by all four `?projectId=<uuid>` endpoints
+  (`/tasks`, `/Features`, `/deliverables`, `/workstreams`). Replaces
+  the inline duplicate that was added in 0.2.0.
+
 ## 0.2.0 — 2026-05-13
 
 ### Fixed (BREAKING)

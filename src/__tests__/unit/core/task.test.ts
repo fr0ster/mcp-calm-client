@@ -32,27 +32,22 @@ function mockConnection(respond: (req: ICalmRequestOptions) => unknown): {
 }
 
 describe('CalmTask', () => {
-  test('list issues GET /tasks (no query)', async () => {
+  test('list puts projectId on the URL, no OData query', async () => {
     const { connection, calls } = mockConnection(() => ({ value: [] }));
     const t = new CalmTask(connection);
-    await t.list();
+    await t.list('P1');
     expect(calls[0]).toMatchObject({
       service: 'tasks',
       method: 'GET',
-      url: '/tasks',
+      url: '/tasks?projectId=P1',
     });
   });
 
-  test('list with ODataQuery appends query string', async () => {
+  test('list layers ODataQuery after projectId', async () => {
     const { connection, calls } = mockConnection(() => ({ value: [] }));
     const t = new CalmTask(connection);
-    await t.list(
-      ODataQuery.new()
-        .filter("projectId eq 'P1'")
-        .top(20)
-        .orderby('dueDate', 'asc'),
-    );
-    expect(calls[0].url).toMatch(/^\/tasks\?\$filter=/);
+    await t.list('P1', ODataQuery.new().top(20).orderby('dueDate', 'asc'));
+    expect(calls[0].url).toMatch(/^\/tasks\?projectId=P1&/);
     expect(calls[0].url).toContain('$top=20');
     expect(calls[0].url).toContain('$orderby=dueDate asc');
     expect(calls[0].params).toBeUndefined();

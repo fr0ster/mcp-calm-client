@@ -18,11 +18,13 @@ export async function getFeature(
 
 export async function getFeatureByDisplayId(
   connection: ICalmConnection,
+  projectId: string,
   displayId: string,
 ): Promise<IFeature> {
   const escaped = displayId.replace(/'/g, "''");
   const collection = await listFeatures(
     connection,
+    projectId,
     ODataQuery.new().filter(`displayId eq '${escaped}'`).top(1),
   );
   const first = collection.value?.[0];
@@ -48,10 +50,11 @@ export async function getFeatureWithExpand<T = unknown>(
 
 export async function getFeatureByDisplayIdWithExpand<T = unknown>(
   connection: ICalmConnection,
+  projectId: string,
   displayId: string,
   expand: string[],
 ): Promise<T> {
-  const feature = await getFeatureByDisplayId(connection, displayId);
+  const feature = await getFeatureByDisplayId(connection, projectId, displayId);
   if (!feature.uuid) {
     throw new CalmApiError({
       code: 'UNKNOWN',
