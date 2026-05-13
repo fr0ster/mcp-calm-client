@@ -127,23 +127,30 @@ describe('CalmTask', () => {
     expect(calls[0].url).toBe('/tasks/t1/references');
   });
 
-  test('workstreams / deliverables accept OData query for projectId filter', async () => {
+  test('workstreams / deliverables put projectId on the URL, not into $filter', async () => {
     const { connection, calls } = mockConnection(() => ({ value: [] }));
     const t = new CalmTask(connection);
-    await t.listWorkstreams(ODataQuery.new().filter("projectId eq 'P1'"));
-    await t.listDeliverables(ODataQuery.new().filter("projectId eq 'P1'"));
-    expect(calls[0].url).toMatch(/^\/workstreams\?\$filter=/);
-    expect(calls[1].url).toMatch(/^\/deliverables\?\$filter=/);
-    expect(calls[0].params).toBeUndefined();
-    expect(calls[1].params).toBeUndefined();
+    await t.listWorkstreams('P1');
+    await t.listDeliverables('P1');
+    expect(calls[0].url).toBe('/workstreams?projectId=P1');
+    expect(calls[1].url).toBe('/deliverables?projectId=P1');
   });
 
-  test('workstreams / deliverables without query list all', async () => {
+  test('workstreams / deliverables layer OData query after projectId', async () => {
     const { connection, calls } = mockConnection(() => ({ value: [] }));
     const t = new CalmTask(connection);
-    await t.listWorkstreams();
-    await t.listDeliverables();
-    expect(calls[0].url).toBe('/workstreams');
-    expect(calls[1].url).toBe('/deliverables');
+    await t.listWorkstreams('P1', ODataQuery.new().top(5));
+    await t.listDeliverables('P1', ODataQuery.new().top(5));
+    expect(calls[0].url).toBe('/workstreams?projectId=P1&$top=5');
+    expect(calls[1].url).toBe('/deliverables?projectId=P1&$top=5');
+  });
+
+  test('workstreams / deliverables URL-encode projectId', async () => {
+    const { connection, calls } = mockConnection(() => ({ value: [] }));
+    const t = new CalmTask(connection);
+    await t.listWorkstreams('P 1/+&=');
+    expect(calls[0].url).toBe(
+      `/workstreams?projectId=${encodeURIComponent('P 1/+&=')}`,
+    );
   });
 });

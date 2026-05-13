@@ -74,13 +74,17 @@ export class CalmTask {
     return listTaskReferences(this.connection, taskId, query);
   }
 
-  listWorkstreams(query?: ODataQuery): Promise<IODataCollection<IWorkstream>> {
-    return listWorkstreams(this.connection, query);
+  listWorkstreams(
+    projectId: string,
+    query?: ODataQuery,
+  ): Promise<IODataCollection<IWorkstream>> {
+    return listWorkstreams(this.connection, projectId, query);
   }
 
   listDeliverables(
+    projectId: string,
     query?: ODataQuery,
   ): Promise<IODataCollection<IDeliverable>> {
-    return listDeliverables(this.connection, query);
+    return listDeliverables(this.connection, projectId, query);
   }
 }
