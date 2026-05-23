@@ -1,4 +1,3 @@
-import type { AxiosError } from 'axios';
 import { CalmApiError } from '../errors/CalmApiError';
 import type { IODataErrorResponse } from '../odata/ODataCollection';
 
@@ -10,24 +9,15 @@ function hasODataErrorShape(data: unknown): data is IODataErrorResponse {
   return typeof d.code === 'string' && typeof d.message === 'string';
 }
 
-export function toCalmApiError(cause: unknown): CalmApiError {
-  if (cause instanceof CalmApiError) return cause;
-
-  const axiosErr = cause as AxiosError<unknown> | undefined;
-  const response = axiosErr?.response;
-
-  if (response) {
-    const status = response.status;
-    const data = response.data;
-
-    if (hasODataErrorShape(data)) {
-      return CalmApiError.fromOData(status, data.error, data);
-    }
-
-    const body = typeof data === 'string' ? data : JSON.stringify(data ?? '');
-    return CalmApiError.fromHttp(status, body);
+/**
+ * Build a `CalmApiError` from an already-extracted HTTP status and a
+ * parsed response body. Transport-agnostic: works for fetch, axios, or
+ * any client that can hand over (status, body).
+ */
+export function calmErrorFromBody(status: number, data: unknown): CalmApiError {
+  if (hasODataErrorShape(data)) {
+    return CalmApiError.fromOData(status, data.error, data);
   }
-
-  const message = cause instanceof Error ? cause.message : String(cause);
-  return CalmApiError.fromNetwork(cause, message);
+  const body = typeof data === 'string' ? data : JSON.stringify(data ?? '');
+  return CalmApiError.fromHttp(status, body);
 }
