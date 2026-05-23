@@ -1,6 +1,6 @@
 {
   "name": "@mcp-abap-adt/calm-client",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "SAP Cloud ALM OData/REST client library for MCP ABAP ADT ecosystem",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -32,9 +32,6 @@
   },
   "peerDependencies": {
     "@mcp-abap-adt/interfaces": "^7.1.0"
-  },
-  "dependencies": {
-    "axios": "^1.13.6"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.4",

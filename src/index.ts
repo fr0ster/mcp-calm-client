@@ -9,15 +9,7 @@ export {
 
 // ─── Factory & concrete connection ──────────────────────────────────────────
 export { CalmClient } from './clients/CalmClient';
-export {
-  type CalmAuthMode,
-  CalmConnection,
-  type ICalmConnectionOptions,
-} from './connection/CalmConnection';
-export {
-  type CalmServiceRouteMap,
-  DEFAULT_CALM_SERVICE_ROUTES,
-} from './connection/serviceRoutes';
+export { calmErrorFromBody } from './connection/parseCalmError';
 export type {
   IAnalyticsProviderInfo,
   IListProvidersResult,

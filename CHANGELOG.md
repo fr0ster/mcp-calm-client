@@ -1,5 +1,36 @@
 # Changelog
 
+## 0.4.0 — 2026-05-23
+
+### Changed (BREAKING)
+
+- **Connection moved out of this package.** The concrete
+  `CalmConnection` class and the `DEFAULT_CALM_SERVICE_ROUTES` map are
+  removed. Connection construction (auth strategy, transport, URL
+  assembly) is now a server-level concern — see
+  `@mcp-abap-adt/calm-server`'s `connection/` module. This package now
+  ships only the API surface (`CalmClient`, `core/*` resource
+  primitives, OData helpers, error types) and depends on the
+  `ICalmConnection` interface from `@mcp-abap-adt/interfaces`.
+
+  Migration: build an `ICalmConnection` (e.g. via `createCalmConnection`
+  from `@mcp-abap-adt/calm-server`, or your own implementation) and pass
+  it to `new CalmClient(connection)`.
+
+- **`toCalmApiError` removed; replaced by `calmErrorFromBody`.** The old
+  helper was axios-coupled (read `error.response`). The new
+  transport-agnostic `calmErrorFromBody(status, body)` builds the same
+  `CalmApiError` from an already-extracted status + parsed body, so a
+  `fetch`-based connection produces the identical error contract.
+
+- **`axios` dropped as a runtime dependency.** The package no longer
+  performs HTTP itself.
+
+### Removed
+
+- `CalmConnection`, `CalmAuthMode`, `ICalmConnectionOptions` exports.
+- `DEFAULT_CALM_SERVICE_ROUTES`, `CalmServiceRouteMap` exports.
+
 ## 0.3.0 — 2026-05-13
 
 ### Fixed (BREAKING)
