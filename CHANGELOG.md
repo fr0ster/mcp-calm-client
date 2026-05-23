@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.4.1 — 2026-05-24
+
+### Fixed
+
+- **`CalmLog.get()` — `serviceId` is now sent as a plain top-level query
+  parameter** (`serviceId=…`) instead of the bracket form
+  `logsFilters[serviceId]=…`. The live Cloud ALM Logs API requires
+  `serviceId` alongside `provider` and rejects the bracket form with
+  HTTP 428 `PRECONDITION_REQUIRED — A required parameter is missing :
+  serviceId`. Confirmed by probing tenant `eu10-004`: with the bracket
+  form the request never passes the precondition; with the plain param
+  it does. No signature change — only the wire encoding.
+
 ## 0.4.0 — 2026-05-23
 
 ### Changed (BREAKING)
