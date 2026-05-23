@@ -31,7 +31,7 @@ function mockConnection(respond: (req: ICalmRequestOptions) => unknown): {
 }
 
 describe('CalmLog', () => {
-  test('get forwards provider and bracket-encoded serviceId filter', async () => {
+  test('get forwards provider and a plain serviceId query param', async () => {
     const { connection, calls } = mockConnection(() => ({ logs: [] }));
     const l = new CalmLog(connection);
     await l.get({ provider: 'sap-alm', serviceId: 'svc-1', limit: 100 });
@@ -40,11 +40,14 @@ describe('CalmLog', () => {
       method: 'GET',
       url: '/logs',
     });
+    // serviceId MUST be a plain top-level param — the live Logs API
+    // rejects the bracket form `logsFilters[serviceId]` with HTTP 428.
     expect(calls[0].params).toMatchObject({
       provider: 'sap-alm',
-      'logsFilters[serviceId]': 'svc-1',
+      serviceId: 'svc-1',
       limit: 100,
     });
+    expect(calls[0].params).not.toHaveProperty('logsFilters[serviceId]');
   });
 
   test('get forwards all optional filters', async () => {

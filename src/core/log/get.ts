@@ -3,8 +3,13 @@ import type { IGetLogsParams, LogRecords } from './types';
 
 /**
  * GET outbound logs. Cloud ALM's `/calm-logs/v1/logs` uses a domain-specific
- * query-string language (not OData): `provider=…`, `logsFilters[serviceId]=…`,
- * date ranges, pagination. Named params are translated to that shape here.
+ * query-string language (not OData): `provider=…`, `serviceId=…`, date
+ * ranges, pagination. Named params are translated to that shape here.
+ *
+ * NOTE: `serviceId` is a plain top-level query parameter. The live Logs
+ * API requires it alongside `provider` and rejects the bracket form
+ * `logsFilters[serviceId]` with HTTP 428 "A required parameter is
+ * missing : serviceId".
  */
 export async function getLogs<T = LogRecords>(
   connection: ICalmConnection,
@@ -19,7 +24,7 @@ export async function getLogs<T = LogRecords>(
   if (params.limit !== undefined) q.limit = params.limit;
   if (params.offset !== undefined) q.offset = params.offset;
   if (params.serviceId !== undefined) {
-    q['logsFilters[serviceId]'] = params.serviceId;
+    q.serviceId = params.serviceId;
   }
   if (params.observedTimestamp !== undefined) {
     q.observedTimestamp = params.observedTimestamp;
