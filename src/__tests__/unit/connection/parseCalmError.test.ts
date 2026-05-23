@@ -1,5 +1,5 @@
-import { CalmApiError } from '../../../errors/CalmApiError';
 import { calmErrorFromBody } from '../../../connection/parseCalmError';
+import { CalmApiError } from '../../../errors/CalmApiError';
 
 describe('calmErrorFromBody', () => {
   it('maps an OData error envelope to a CalmApiError(ODATA_ERROR)', () => {
