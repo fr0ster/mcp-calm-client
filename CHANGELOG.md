@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.4.2 — 2026-05-25
+
+### Fixed
+
+- **`CalmLog.get()` — `limit`/`offset` now page instead of 403-ing.** The
+  live Cloud ALM Logs API has no classic paging: sending `limit` (or
+  `offset`) alone trips the server count cap with HTTP 403 `FORBIDDEN —
+  Response total count is over the limit`. The parameters only take effect
+  when `onLimit=truncate` is also sent. `get()` now defaults `onLimit` to
+  `'truncate'` when `limit`/`offset` is provided and `onLimit` is left
+  unset; an explicit `onLimit` always wins. Confirmed by probing tenant
+  `eu10-004`: `limit=5` → 403, `limit=5 + onLimit=truncate` → 200. No
+  signature change. Closes #7.
+- Corrected the stale `logsFilters[serviceId]` doc comment in
+  `IGetLogsParams` (the param has been a plain `serviceId` since 0.4.1).
+
 ## 0.4.1 — 2026-05-24
 
 ### Fixed

@@ -29,7 +29,16 @@ export async function getLogs<T = LogRecords>(
   if (params.observedTimestamp !== undefined) {
     q.observedTimestamp = params.observedTimestamp;
   }
-  if (params.onLimit !== undefined) q.onLimit = params.onLimit;
+  // The live Logs API has no classic paging: `limit`/`offset` alone trip the
+  // server count cap (HTTP 403 "total count is over the limit") instead of
+  // paging. They only take effect when `onLimit=truncate` is also sent. So
+  // when the caller asks to page but doesn't pick an onLimit strategy,
+  // default to `truncate` — otherwise the request 403s on any real window.
+  if (params.onLimit !== undefined) {
+    q.onLimit = params.onLimit;
+  } else if (params.limit !== undefined || params.offset !== undefined) {
+    q.onLimit = 'truncate';
+  }
 
   const response = await connection.makeRequest<T>({
     service: 'logs',
