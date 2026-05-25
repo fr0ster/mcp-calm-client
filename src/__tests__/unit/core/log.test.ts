@@ -79,6 +79,37 @@ describe('CalmLog', () => {
     });
   });
 
+  test('get defaults onLimit to truncate when limit is set and onLimit is not', async () => {
+    // The live Logs API 403s on `limit` alone (count-cap) — it only pages
+    // with onLimit=truncate. So get() injects truncate when paging is asked
+    // for without an explicit strategy.
+    const { connection, calls } = mockConnection(() => ({}));
+    const l = new CalmLog(connection);
+    await l.get({ provider: 'p', limit: 5 });
+    expect(calls[0].params).toMatchObject({ limit: 5, onLimit: 'truncate' });
+  });
+
+  test('get defaults onLimit to truncate when offset is set and onLimit is not', async () => {
+    const { connection, calls } = mockConnection(() => ({}));
+    const l = new CalmLog(connection);
+    await l.get({ provider: 'p', offset: 10 });
+    expect(calls[0].params).toMatchObject({ offset: 10, onLimit: 'truncate' });
+  });
+
+  test('get does NOT inject onLimit when no paging is requested', async () => {
+    const { connection, calls } = mockConnection(() => ({}));
+    const l = new CalmLog(connection);
+    await l.get({ provider: 'p', period: '10M' });
+    expect(calls[0].params).not.toHaveProperty('onLimit');
+  });
+
+  test('get keeps an explicit onLimit over the truncate default', async () => {
+    const { connection, calls } = mockConnection(() => ({}));
+    const l = new CalmLog(connection);
+    await l.get({ provider: 'p', limit: 5, onLimit: 'reject' });
+    expect(calls[0].params).toMatchObject({ limit: 5, onLimit: 'reject' });
+  });
+
   test('post forwards useCase/serviceId in query and records as body', async () => {
     let body: unknown;
     let headers: Record<string, string> | undefined;

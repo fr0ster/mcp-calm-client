@@ -7,9 +7,18 @@ export interface IGetLogsParams {
   to?: string;
   limit?: number;
   offset?: number;
-  /** Translated to the `logsFilters[serviceId]=…` bracket query param. */
+  /**
+   * Emitted as a plain `serviceId` query param. The live Logs API requires it
+   * alongside `provider` and 428s without it (the bracket form
+   * `logsFilters[serviceId]` is rejected).
+   */
   serviceId?: string;
   observedTimestamp?: boolean;
+  /**
+   * Server-side count-cap strategy. `limit`/`offset` only page when this is
+   * `'truncate'`; `get()` defaults it to `'truncate'` when `limit`/`offset`
+   * is set and this is left unset.
+   */
   onLimit?: string;
 }
 
