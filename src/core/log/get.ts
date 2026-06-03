@@ -18,6 +18,7 @@ export async function getLogs<T = LogRecords>(
   const q: Record<string, unknown> = { provider: params.provider };
   if (params.format !== undefined) q.format = params.format;
   if (params.version !== undefined) q.version = params.version;
+  if (params.category !== undefined) q.category = params.category;
   if (params.period !== undefined) q.period = params.period;
   if (params.from !== undefined) q.from = params.from;
   if (params.to !== undefined) q.to = params.to;

@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.0 — 2026-06-03
+
+### Added
+
+- **`CalmLog.get()` — `category` query param.** `IGetLogsParams` gains an
+  optional `category?: string`, forwarded verbatim as a plain `category`
+  query param (e.g. `category=ABAP Runtime`). The live Cloud ALM Logs API
+  uses it as a domain-specific log-category filter alongside
+  `provider`/`serviceId`. No behaviour change when omitted. `format` and
+  `version` were already forwarded; `category` closes the gap so a full
+  `/calm-logs/v1/logs?version=…&provider=…&serviceId=…&category=…&format=…`
+  query can be expressed through the typed client.
+
 ## 0.4.2 — 2026-05-25
 
 ### Fixed
