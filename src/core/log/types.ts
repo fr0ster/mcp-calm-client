@@ -2,6 +2,12 @@ export interface IGetLogsParams {
   provider: string;
   format?: string;
   version?: string;
+  /**
+   * Domain-specific log category filter, emitted as a plain `category` query
+   * param (e.g. `ABAP Runtime`). Forwarded verbatim — the live Logs API owns
+   * the set of valid category names.
+   */
+  category?: string;
   period?: string;
   from?: string;
   to?: string;
