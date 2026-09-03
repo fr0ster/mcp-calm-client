@@ -13,7 +13,9 @@
   "files": [
     "dist",
     "README.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE",
+    "COPYING"
   ],
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo tsconfig.test.integration.tsbuildinfo",
@@ -51,7 +53,7 @@
     "type": "git",
     "url": "git+https://github.com/fr0ster/mcp-calm-client.git"
   },
-  "license": "MIT",
+  "license": "LGPL-3.0-only",
   "keywords": [
     "sap",
     "cloud-alm",
