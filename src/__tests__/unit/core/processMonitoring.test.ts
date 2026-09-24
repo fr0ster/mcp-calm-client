@@ -2,7 +2,7 @@ import type {
   ICalmConnection,
   ICalmRequestOptions,
   ICalmResponse,
-} from '@mcp-abap-adt/interfaces';
+} from '@mcp-abap-adt/interfaces-calm';
 import { CalmProcessMonitoring } from '../../../core/processMonitoring/CalmProcessMonitoring';
 import { ODataQuery } from '../../../odata/ODataQuery';
 

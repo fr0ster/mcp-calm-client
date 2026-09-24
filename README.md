@@ -21,11 +21,15 @@ to `/oauth/token` itself.
 npm install @mcp-abap-adt/calm-client
 ```
 
-Peer dependency:
+Peer dependencies — the contracts, each from the package that declares it:
 
 ```bash
-npm install @mcp-abap-adt/interfaces  # ^7.1.0
+npm install @mcp-abap-adt/interfaces-calm   # ^1.0.1  ICalmConnection, CalmService, ICalmRequestOptions, ICalmResponse
+npm install @mcp-abap-adt/interfaces-auth   # ^1.2.0  ITokenRefresher
+npm install @mcp-abap-adt/interfaces-utils  # ^1.1.0  ILogger
 ```
+
+Not `@mcp-abap-adt/interfaces`: that facade is **deleted** as of its 52.0.0. npm still serves 51.0.0 to anyone pinned to it, and nothing further ships there — which is why a peer dependency on it had to go.
 
 For the auth pipeline (OAuth2 tenant mode):
 

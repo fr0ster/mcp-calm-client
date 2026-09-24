@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 import type { ICreateTaskParams, ITask } from './types';
 
 export async function createTask(

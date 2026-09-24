@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 
 export async function deleteTask(
   connection: ICalmConnection,

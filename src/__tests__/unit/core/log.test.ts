@@ -2,7 +2,7 @@ import type {
   ICalmConnection,
   ICalmRequestOptions,
   ICalmResponse,
-} from '@mcp-abap-adt/interfaces';
+} from '@mcp-abap-adt/interfaces-calm';
 import { CalmLog } from '../../../core/log/CalmLog';
 
 function mockConnection(respond: (req: ICalmRequestOptions) => unknown): {

@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 import type { ODataQuery } from '../../odata/ODataQuery';
 import type { AnalyticsEndpoint } from './types';
 
