@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 import { CalmAnalytics } from '../core/analytics/CalmAnalytics';
 import { CalmDocument } from '../core/document/CalmDocument';
 import { CalmFeature } from '../core/feature/CalmFeature';

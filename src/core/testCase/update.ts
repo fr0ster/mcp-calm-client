@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 import type { ITestCase, IUpdateTestCaseParams } from './types';
 
 export async function updateTestCase(

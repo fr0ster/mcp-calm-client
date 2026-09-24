@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 import { CalmApiError } from '../../errors/CalmApiError';
 import { ODataQuery } from '../../odata/ODataQuery';
 import { listFeatures } from './list';

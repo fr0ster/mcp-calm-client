@@ -10,7 +10,7 @@
  *   DEBUG_CALM_CONNECTORS=true              CalmConnection logging
  */
 
-import type { ILogger } from '@mcp-abap-adt/interfaces';
+import type { ILogger } from '@mcp-abap-adt/interfaces-utils';
 // Subpath import avoids eager `new PinoLogger()` side effect in @mcp-abap-adt/logger
 // which errors if `pino` is not installed.
 import { DefaultLogger } from '@mcp-abap-adt/logger/dist/default-logger';

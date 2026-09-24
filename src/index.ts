@@ -1,11 +1,11 @@
 // ─── Contracts (from @mcp-abap-adt/interfaces) ──────────────────────────────
-export {
-  CALM_SERVICES,
-  type CalmService,
-  type ICalmConnection,
-  type ICalmRequestOptions,
-  type ICalmResponse,
-} from '@mcp-abap-adt/interfaces';
+export type {
+  CalmService,
+  ICalmConnection,
+  ICalmRequestOptions,
+  ICalmResponse,
+} from '@mcp-abap-adt/interfaces-calm';
+export { CALM_SERVICES } from '@mcp-abap-adt/interfaces-calm';
 
 // ─── Factory & concrete connection ──────────────────────────────────────────
 export { CalmClient } from './clients/CalmClient';

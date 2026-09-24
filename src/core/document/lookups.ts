@@ -1,4 +1,4 @@
-import type { ICalmConnection } from '@mcp-abap-adt/interfaces';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
 import type { IODataCollection } from '../../odata/ODataCollection';
 import type { IDocumentStatus, IDocumentType } from './types';
 

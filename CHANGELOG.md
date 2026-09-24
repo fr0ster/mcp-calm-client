@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+### Changed
+
+- **The contracts come from the packages that declare them, not from the deleted
+  facade.** `@mcp-abap-adt/interfaces@^7.1.0` is gone from both
+  `peerDependencies` and `devDependencies`; in its place
+  `@mcp-abap-adt/interfaces-calm@^1.0.1`, `-auth@^1.2.0` and `-utils@^1.1.0`.
+  62 files repointed — 62 import statements name `-calm`, one `-auth`
+  (`ITokenRefresher`) and one `-utils` (`ILogger`).
+
+  **The peer dependency is the part that mattered.** It told every consumer of
+  this package to install `@mcp-abap-adt/interfaces`, and that package is deleted
+  as of its 52.0.0 — npm serves 51.0.0 to whoever is pinned to it and nothing
+  further ships there. A peer range pointing at a package with no future is worse
+  than a missing one: it is an instruction.
+
+  **Cloud ALM is not ABAP**, which is why these contracts have their own package
+  now. They were in the ADT contract because one of them aliased an ADT type, so
+  this repository tracked the fastest-moving package in the family to describe a
+  service with nothing to do with ADT. It sat on facade major 7 while the facade
+  passed 51.
+
+- **The auth pipeline's dev ranges move with it** —
+  `@mcp-abap-adt/auth-stores@^1.2.0` (was `^1.0.4`),
+  `@mcp-abap-adt/auth-providers@^2.2.0` (was `^1.0.5`),
+  `@mcp-abap-adt/auth-broker@^2.1.0` (was `^1.0.5`) and
+  `@mcp-abap-adt/logger@^0.4.0` (was `^0.1.4`). Each of the older versions
+  declares the facade, so any one of them put a copy of it in this tree. Four
+  copies before, one after — and the last comes from `auth-broker@2.1.0`, whose
+  own migration is released but not yet published.
+
 ## [0.6.0] - 2026-09-03
 
 ### Licence

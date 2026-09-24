@@ -8,7 +8,7 @@ The functional scope was migrated from the Rust project `sap-cloud-alm-odata-mcp
 
 ## Design principles
 
-1. **Interface isolation.** Resource clients depend on `ICalmConnection` only (from `@mcp-abap-adt/interfaces`). The concrete `CalmConnection` is a convenience default; consumers may inject any implementation.
+1. **Interface isolation.** Resource clients depend on `ICalmConnection` only (from `@mcp-abap-adt/interfaces-calm`). The concrete `CalmConnection` is a convenience default; consumers may inject any implementation.
 2. **Auth is delegated.** OAuth2 (XSUAA `client_credentials`) and sandbox API-key are handled by the existing ecosystem (`@mcp-abap-adt/auth-broker` + `auth-providers` + `auth-stores`) via the `ITokenRefresher` interface. The library never talks to `/oauth/token` itself.
 3. **No hardcoded endpoints as a single source of truth.** Service routes have sensible defaults seeded from the Rust source, but every deployment can override them via `CalmConnection({ serviceRoutes })`.
 4. **No MCP-server-specific code.** No MCP tools, no stdio transport, no CLI. The library is consumable from any TS runtime.
@@ -53,7 +53,9 @@ The functional scope was migrated from the Rust project `sap-cloud-alm-odata-mcp
 
 | Package | Role |
 |---|---|
-| `@mcp-abap-adt/interfaces` | Shared contracts: `ICalmConnection`, `CalmService`, `ICalmRequestOptions`, `ICalmResponse`, `ITokenRefresher`, `ILogger`. |
+| `@mcp-abap-adt/interfaces-calm` | Cloud ALM's own contracts: `ICalmConnection`, `CalmService`, `CALM_SERVICES`, `ICalmRequestOptions`, `ICalmResponse`. |
+| `@mcp-abap-adt/interfaces-auth` | `ITokenRefresher`. |
+| `@mcp-abap-adt/interfaces-utils` | `ILogger`. |
 | `@mcp-abap-adt/auth-providers` | `ClientCredentialsProvider` (XSUAA OAuth2) and other token providers. |
 | `@mcp-abap-adt/auth-stores` | `XsuaaServiceKeyStore`, `XsuaaSessionStore`, `SafeXsuaaSessionStore`. |
 | `@mcp-abap-adt/auth-broker` | `AuthBroker` — orchestrates provider + stores, creates `ITokenRefresher`. |

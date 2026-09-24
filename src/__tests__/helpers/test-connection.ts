@@ -1,10 +1,10 @@
+import type { ITokenRefresher } from '@mcp-abap-adt/interfaces-auth';
 import type {
   CalmService,
   ICalmConnection,
   ICalmRequestOptions,
   ICalmResponse,
-  ITokenRefresher,
-} from '@mcp-abap-adt/interfaces';
+} from '@mcp-abap-adt/interfaces-calm';
 import { calmErrorFromBody } from '../../connection/parseCalmError';
 import { CalmApiError } from '../../errors/CalmApiError';
 import { type ICalmTestEnv, readCalmTestEnv } from './test-env';
