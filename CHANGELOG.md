@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.7.0] - 2026-09-24
 
 ### Changed
 
@@ -22,6 +22,12 @@
   this repository tracked the fastest-moving package in the family to describe a
   service with nothing to do with ADT. It sat on facade major 7 while the facade
   passed 51.
+
+- **Note on 0.6.0.** It was tagged and released on GitHub on 2026-09-03 — the
+  LGPL relicensing — and never published: npm serves **0.5.0**, under MIT. This
+  release is what carries both changes to the registry, and it is why
+  `mcp-calm-server` had to pin `calm-client@^0.5.0` in the meantime: `^0.6.0`
+  resolved to nothing.
 
 - **The auth pipeline's dev ranges move with it** —
   `@mcp-abap-adt/auth-stores@^1.2.0` (was `^1.0.4`),
