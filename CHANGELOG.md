@@ -1,5 +1,44 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.8.0] - 2026-09-26
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-auth` is no longer a peer dependency** (it was
+  `^1.2.0`). No file this package publishes imports it — `dist/` names
+  neither `ITokenRefresher` nor any other auth type since the connection moved
+  out in 0.4.0 — so the peer range only told consumers which major to install.
+  Under the `auth-broker` 3 family, which needs `interfaces-auth` 2.1, that
+  instruction conflicted with the consumer's own tree. Dropping it asks
+  nothing of any consumer; a consumer that builds a connection with a token
+  refresher declares `interfaces-auth` itself. It stays a dev dependency
+  (`^2.0.1`) for the integration-test connection, whose `ITokenRefresher` is
+  unchanged in 2.x.
+
+- **`@mcp-abap-adt/interfaces-utils` is no longer a peer dependency** either
+  (it was `^1.1.0`), for the same reason: nothing this package publishes
+  imports it. It stays a dev dependency for the test helpers. The one peer
+  left is `@mcp-abap-adt/interfaces-calm`, which every module imports.
+
+- **`auth-broker`, `auth-providers` and `auth-stores` are no longer dev
+  dependencies.** Nothing in the repository imports them; the README's broker
+  wiring is a snippet in the document, not a project that compiles against
+  them. The install now holds one copy each of `interfaces-auth` (2.1.0),
+  `interfaces-calm` (1.0.1) and `interfaces-utils` (1.1.0). The published
+  package keeps `engines.node >=18`: it has no runtime dependency, and its
+  one peer requires no more.
+
+### Documentation
+
+- README and `docs/` no longer describe `CalmConnection`, which left this
+  package in 0.4.0: the connection, its auth header and its 401 retry are the
+  consumer's. The README shows wiring a token refresher with the auth-broker
+  3.x constructor (`{ sessionStore, serviceKeyStore?, provider }`, no
+  `browser` argument) and notes that `refreshToken()` now always obtains a new
+  token.
+
 ## [0.7.0] - 2026-09-24
 
 ### Changed
