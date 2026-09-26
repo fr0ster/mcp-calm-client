@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-26
+
 ### Changed
 
 - **`@mcp-abap-adt/interfaces-auth` is no longer a peer dependency** (it was
@@ -15,15 +17,18 @@
   (`^2.0.1`) for the integration-test connection, whose `ITokenRefresher` is
   unchanged in 2.x.
 
-- **Dev dependencies move to the new auth family** —
-  `@mcp-abap-adt/auth-broker@^3.0.0` (was `^2.1.0`),
-  `@mcp-abap-adt/auth-providers@^4.2.0` (was `^2.2.0`),
-  `@mcp-abap-adt/auth-stores@^1.2.3` (was `^1.2.0`). The install now holds one
-  copy each of `interfaces-auth` (2.1.0), `interfaces-auth-sap` (1.0.1) and
-  `interfaces-utils` (1.1.0). The broker and providers declare
-  `engines: ^22 || ^24`, so development here wants Node.js 22 or 24; the
-  published package keeps `engines.node >=18`, since none of its runtime
-  dependencies or peers requires more.
+- **`@mcp-abap-adt/interfaces-utils` is no longer a peer dependency** either
+  (it was `^1.1.0`), for the same reason: nothing this package publishes
+  imports it. It stays a dev dependency for the test helpers. The one peer
+  left is `@mcp-abap-adt/interfaces-calm`, which every module imports.
+
+- **`auth-broker`, `auth-providers` and `auth-stores` are no longer dev
+  dependencies.** Nothing in the repository imports them; the README's broker
+  wiring is a snippet in the document, not a project that compiles against
+  them. The install now holds one copy each of `interfaces-auth` (2.1.0),
+  `interfaces-calm` (1.0.1) and `interfaces-utils` (1.1.0). The published
+  package keeps `engines.node >=18`: it has no runtime dependency, and its
+  one peer requires no more.
 
 ### Documentation
 
