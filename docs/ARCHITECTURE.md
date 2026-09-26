@@ -8,9 +8,9 @@ The functional scope was migrated from the Rust project `sap-cloud-alm-odata-mcp
 
 ## Design principles
 
-1. **Interface isolation.** Resource clients depend on `ICalmConnection` only (from `@mcp-abap-adt/interfaces-calm`). The concrete `CalmConnection` is a convenience default; consumers may inject any implementation.
-2. **Auth is delegated.** OAuth2 (XSUAA `client_credentials`) and sandbox API-key are handled by the existing ecosystem (`@mcp-abap-adt/auth-broker` + `auth-providers` + `auth-stores`) via the `ITokenRefresher` interface. The library never talks to `/oauth/token` itself.
-3. **No hardcoded endpoints as a single source of truth.** Service routes have sensible defaults seeded from the Rust source, but every deployment can override them via `CalmConnection({ serviceRoutes })`.
+1. **Interface isolation.** Resource clients depend on `ICalmConnection` only (from `@mcp-abap-adt/interfaces-calm`). This package ships no concrete connection (`CalmConnection` moved out in 0.4.0); the consumer supplies one, e.g. `createCalmConnection` from `@mcp-abap-adt/calm-server`.
+2. **Auth is not here.** OAuth2 (XSUAA `client_credentials`) and sandbox API-key belong to the `ICalmConnection` implementation, which typically takes an `ITokenRefresher` from `@mcp-abap-adt/auth-broker`. No file this package publishes imports an auth package or an auth contract, so `@mcp-abap-adt/interfaces-auth` is not a peer dependency.
+3. **No hardcoded endpoints as a single source of truth.** Service routes have sensible defaults seeded from the Rust source, but every deployment can override them in its connection implementation.
 4. **No MCP-server-specific code.** No MCP tools, no stdio transport, no CLI. The library is consumable from any TS runtime.
 5. **Errors are one type.** Any failure surfaces as `CalmApiError` with a typed `code`. OData error envelopes, plain HTTP errors and network errors are all normalized.
 
@@ -33,16 +33,9 @@ The functional scope was migrated from the Rust project `sap-cloud-alm-odata-mcp
                                │ ICalmConnection.makeRequest()
                                ▼
 ┌──────────────────────────────────────────────────────────────────┐
-│ CalmConnection  (axios + auth header + 401-retry + error map)    │
-│        │                                                         │
-│        ├── ITokenRefresher ──→ @mcp-abap-adt/auth-broker         │
-│        │                           │                             │
-│        │                           ├─ ClientCredentialsProvider  │
-│        │                           ├─ XsuaaServiceKeyStore       │
-│        │                           └─ XsuaaSessionStore          │
-│        │                                                         │
-│        ├── DEFAULT_CALM_SERVICE_ROUTES  (override-able)          │
-│        └── toCalmApiError (OData / HTTP / Network → CalmApiError)│
+│ ICalmConnection implementation — the consumer's, not this        │
+│ package's (transport, auth header, 401 retry, service routes;    │
+│ e.g. @mcp-abap-adt/calm-server, ITokenRefresher from auth-broker)│
 └──────────────────────────────────────────────────────────────────┘
                                │
                                ▼
@@ -54,14 +47,14 @@ The functional scope was migrated from the Rust project `sap-cloud-alm-odata-mcp
 | Package | Role |
 |---|---|
 | `@mcp-abap-adt/interfaces-calm` | Cloud ALM's own contracts: `ICalmConnection`, `CalmService`, `CALM_SERVICES`, `ICalmRequestOptions`, `ICalmResponse`. |
-| `@mcp-abap-adt/interfaces-auth` | `ITokenRefresher`. |
+| `@mcp-abap-adt/interfaces-auth` | `ITokenRefresher` — used by connection implementations and by this repository's integration-test connection; not a peer dependency. |
 | `@mcp-abap-adt/interfaces-utils` | `ILogger`. |
 | `@mcp-abap-adt/auth-providers` | `ClientCredentialsProvider` (XSUAA OAuth2) and other token providers. |
 | `@mcp-abap-adt/auth-stores` | `XsuaaServiceKeyStore`, `XsuaaSessionStore`, `SafeXsuaaSessionStore`. |
-| `@mcp-abap-adt/auth-broker` | `AuthBroker` — orchestrates provider + stores, creates `ITokenRefresher`. |
-| **`@mcp-abap-adt/calm-client`** (this) | `CalmConnection`, `CalmClient`, `core/*` resource clients, `ODataQuery`, `CalmApiError`. |
+| `@mcp-abap-adt/auth-broker` | `AuthBroker` (3.x: `{ sessionStore, serviceKeyStore?, provider }`) — orchestrates provider + stores, creates `ITokenRefresher`. |
+| **`@mcp-abap-adt/calm-client`** (this) | `CalmClient`, `calmErrorFromBody`, `core/*` resource clients, `ODataQuery`, `CalmApiError`. |
 
-No concrete auth implementation is imported by this library at runtime — only interfaces. Consumers wire `AuthBroker` once and inject the resulting `ITokenRefresher`.
+No auth package — implementation or contract — is imported by the published code. A consumer wires `AuthBroker` once and injects the resulting `ITokenRefresher` into its own connection.
 
 ## Directory layout (current)
 
@@ -70,9 +63,7 @@ src/
   odata/          ODataQuery, ODataCollection / error types
   errors/         CalmApiError + typed CALM_API_ERROR_CODES
   connection/
-    CalmConnection.ts     concrete ICalmConnection impl
-    serviceRoutes.ts      DEFAULT_CALM_SERVICE_ROUTES (seed, override-able)
-    parseCalmError.ts     internal: toCalmApiError(axios/unknown) → CalmApiError
+    parseCalmError.ts     calmErrorFromBody(status, body) → CalmApiError
   clients/
     CalmClient.ts         factory (populated as core/* lands)
   core/
@@ -101,33 +92,35 @@ A Cloud ALM request URL is built from three parts:
 ```
 
 - `baseUrl` — tenant host, e.g. `https://<tenant>.eu10.alm.cloud.sap` (OAuth2) or `https://sandbox.api.sap.com/SAPCALM` (sandbox).
-- `apiPrefix` — `/api` for OAuth2 mode, empty for sandbox. Override via `CalmConnection({ apiPrefix })`.
-- `serviceRoute` — from `DEFAULT_CALM_SERVICE_ROUTES` (e.g. `/calm-features/v1`). Override via `CalmConnection({ serviceRoutes })`.
+- `apiPrefix` — `/api` for OAuth2 mode, empty for sandbox. Chosen by the connection implementation.
+- `serviceRoute` — resolved by the connection implementation from the `CalmService` the handler names (e.g. `/calm-features/v1`).
 - `requestPath` — set by the resource client (e.g. `/Features({uuid})`).
 - `queryString` — OData query string from `ODataQuery.toQueryString()` (or plain `params` for REST clients).
 
 **Rule — `url` vs `params`**: OData query strings are RFC 3986 pre-encoded by `ODataQuery.toQueryString()` and must be **concatenated into `url`**, never passed as axios `params` (axios would re-encode and corrupt the already-encoded `$filter`/`$search` values). `ICalmRequestOptions.params` is reserved for plain REST `key=value` pairs (strings/numbers/booleans) where axios's default encoding is safe — used only by Tasks, Projects, Logs clients.
 
-## Auth flow
+## Auth flow (in the connection implementation)
+
+Shown for orientation; none of it runs in this package.
 
 ```
-AuthBroker
-   ├── XsuaaServiceKeyStore.load(path)   → { uaaUrl, clientId, clientSecret }
-   ├── ClientCredentialsProvider         → POSTs to {uaaUrl}/oauth/token
-   ├── XsuaaSessionStore                 → persists JWT + expiration
+AuthBroker({ sessionStore, serviceKeyStore, provider })   (auth-broker 3.x)
+   ├── XsuaaServiceKeyStore              → UAA credentials for the destination
+   ├── provider (factory or instance)    → IRefreshableTokenProvider, e.g. ClientCredentialsProvider
+   ├── XsuaaSessionStore                 → persists token (+ refresh token, never the client secret)
    └── createTokenRefresher(destination) → ITokenRefresher { getToken, refreshToken }
                                                 │
                                                 ▼
-                                       CalmConnection
+                                       ICalmConnection implementation
                                            ├── getToken()     (each request)
-                                           └── refreshToken() (on 401/403)
+                                           └── refreshToken() (on 401/403 — a new token since auth-broker 3.0.0)
 ```
 
-The **sandbox mode** bypasses this entirely: `CalmConnection({ apiKey })` sends an `APIKey` header and performs no token refresh.
+The **sandbox mode** bypasses this entirely: the connection sends an `APIKey` header and performs no token refresh.
 
 ## Error model
 
-All errors thrown from `CalmConnection.makeRequest()` and from resource clients are `CalmApiError` instances with:
+All errors thrown from resource clients (and, by convention, from a connection that uses `calmErrorFromBody`) are `CalmApiError` instances with:
 
 - `code: CalmApiErrorCode` — one of `ODATA_ERROR`, `HTTP_ERROR`, `NOT_FOUND`, `JSON_PARSE`, `NETWORK`, `UNKNOWN`. `NOT_FOUND` is client-fabricated (e.g. `getByDisplayId` returned an empty collection) and distinct from transport-level `HTTP_ERROR` with status 404.
 - `status?: number` — HTTP status if available.
@@ -141,12 +134,12 @@ Classification rule (see `src/connection/parseCalmError.ts`):
 2. Else if there is an HTTP response → `fromHttp`.
 3. Else (no response → network error) → `fromNetwork`.
 
-## 401/403 retry
+## 401/403 retry (in the connection implementation)
 
 Only in OAuth2 mode with a `tokenRefresher`:
 
 1. First attempt fails with 401 or 403.
-2. `tokenRefresher.refreshToken()` is invoked (forces new token from provider).
+2. `tokenRefresher.refreshToken()` is invoked. With auth-broker 3.x it forces a new token from the provider (`IRefreshableTokenProvider.refreshTokens()`); 2.x returned the cached token the server had just refused.
 3. Request is retried **once**.
 4. Any further failure surfaces as `CalmApiError`.
 

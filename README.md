@@ -7,12 +7,13 @@ typed, testable handlers for all nine Cloud ALM services (Features, Documents,
 Test Management, Process Hierarchy, Analytics, Process Monitoring, Tasks,
 Projects, Logs) over a single narrow connection contract (`ICalmConnection`).
 
-Authentication is delegated to the existing `@mcp-abap-adt` ecosystem
-(`auth-broker` + `auth-providers` + `auth-stores`); this package never talks
-to `/oauth/token` itself.
+This package ships no connection and does no authentication. It takes any
+`ICalmConnection` (from `@mcp-abap-adt/interfaces-calm`) — the transport,
+the Bearer or API-key header and the retry after a 401 are that
+implementation's, for example `createCalmConnection` from
+`@mcp-abap-adt/calm-server`. Nothing in the published code imports an auth
+package.
 
-- **Status**: 0.1.0 — all nine services covered with unit tests (no live
-  integration yet; see [docs/TESTING.md](docs/TESTING.md)).
 - **Reference architecture**: see [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
 ## Installation
@@ -25,63 +26,27 @@ Peer dependencies — the contracts, each from the package that declares it:
 
 ```bash
 npm install @mcp-abap-adt/interfaces-calm   # ^1.0.1  ICalmConnection, CalmService, ICalmRequestOptions, ICalmResponse
-npm install @mcp-abap-adt/interfaces-auth   # ^1.2.0  ITokenRefresher
 npm install @mcp-abap-adt/interfaces-utils  # ^1.1.0  ILogger
 ```
 
+`@mcp-abap-adt/interfaces-auth` is **no longer a peer dependency** (it was
+`^1.2.0` up to 0.7.0). No file this package publishes refers to it, so it
+only told consumers which major to install — and a consumer on the
+`auth-broker` 3 family, which needs `interfaces-auth` 2.1, got a conflicting
+instruction. Whoever builds the connection declares the auth contract it
+uses.
+
 Not `@mcp-abap-adt/interfaces`: that facade is **deleted** as of its 52.0.0. npm still serves 51.0.0 to anyone pinned to it, and nothing further ships there — which is why a peer dependency on it had to go.
-
-For the auth pipeline (OAuth2 tenant mode):
-
-```bash
-npm install @mcp-abap-adt/auth-broker @mcp-abap-adt/auth-providers @mcp-abap-adt/auth-stores
-```
 
 ## Quick start
 
-### OAuth2 mode (production tenant)
-
 ```ts
-import { AuthBroker } from '@mcp-abap-adt/auth-broker';
-import { ClientCredentialsProvider } from '@mcp-abap-adt/auth-providers';
-import {
-  XsuaaServiceKeyStore,
-  XsuaaSessionStore,
-} from '@mcp-abap-adt/auth-stores';
-import {
-  CalmClient,
-  CalmConnection,
-  ODataQuery,
-} from '@mcp-abap-adt/calm-client';
+import type { ICalmConnection } from '@mcp-abap-adt/interfaces-calm';
+import { CalmClient, ODataQuery } from '@mcp-abap-adt/calm-client';
 
-// 1. Load XSUAA service key and wire the auth broker.
-const serviceKeyStore = new XsuaaServiceKeyStore('/path/to/keys');
-const serviceKey = await serviceKeyStore.load('my-tenant');
+// Any ICalmConnection: calm-server's createCalmConnection, or your own.
+declare const connection: ICalmConnection;
 
-const broker = new AuthBroker(
-  {
-    sessionStore: new XsuaaSessionStore(
-      '/path/to/sessions',
-      serviceKey.uaa.url,
-    ),
-    serviceKeyStore,
-    tokenProvider: new ClientCredentialsProvider({
-      uaaUrl: serviceKey.uaa.url,
-      clientId: serviceKey.uaa.clientid,
-      clientSecret: serviceKey.uaa.clientsecret,
-    }),
-  },
-  'none',
-);
-
-// 2. Build the connection. It takes the token refresher from the broker;
-//    the library never sees client credentials directly.
-const connection = new CalmConnection({
-  baseUrl: 'https://<tenant>.<region>.alm.cloud.sap',
-  tokenRefresher: broker.createTokenRefresher('calm'),
-});
-
-// 3. Use the factory to access resource handlers.
 const calm = new CalmClient(connection);
 
 const features = await calm.getFeatures().list(
@@ -92,22 +57,49 @@ const features = await calm.getFeatures().list(
 );
 ```
 
-### Sandbox mode (SAP API Business Hub)
+### Tokens for an OAuth2 connection (auth-broker 3)
+
+A connection that sends a Bearer token usually takes an `ITokenRefresher`
+(`@mcp-abap-adt/interfaces-auth`). With `@mcp-abap-adt/auth-broker` 3.x,
+`@mcp-abap-adt/auth-providers` 4.2+ and `@mcp-abap-adt/auth-stores` 1.2.3+
+(the broker and the providers require Node.js 22 or 24):
 
 ```ts
-import { CalmClient, CalmConnection } from '@mcp-abap-adt/calm-client';
+import { AuthBroker } from '@mcp-abap-adt/auth-broker';
+import { ClientCredentialsProvider } from '@mcp-abap-adt/auth-providers';
+import {
+  XsuaaServiceKeyStore,
+  XsuaaSessionStore,
+} from '@mcp-abap-adt/auth-stores';
 
-const connection = new CalmConnection({
-  baseUrl: 'https://sandbox.api.sap.com/SAPCALM',
-  apiKey: process.env.CALM_API_KEY!,
+const broker = new AuthBroker({
+  sessionStore: new XsuaaSessionStore(
+    '/path/to/sessions',
+    'https://<tenant>.<region>.alm.cloud.sap',
+  ),
+  serviceKeyStore: new XsuaaServiceKeyStore('/path/to/keys'),
+  // Called once per destination, seeded with the stored UAA credentials.
+  provider: (destination, auth) => {
+    if (!auth?.uaaUrl || !auth.uaaClientId || !auth.uaaClientSecret) {
+      throw new Error(`No UAA credentials stored for ${destination}`);
+    }
+    return new ClientCredentialsProvider({
+      uaaUrl: auth.uaaUrl,
+      clientId: auth.uaaClientId,
+      clientSecret: auth.uaaClientSecret,
+    });
+  },
 });
 
-const calm = new CalmClient(connection);
-const projects = await calm.getProjects().list();
+// Hand this to the ICalmConnection implementation.
+const tokenRefresher = broker.createTokenRefresher('calm');
 ```
 
-In sandbox mode, `CalmConnection` sends an `APIKey` header, uses an empty
-API prefix (no `/api`), and performs no token refresh — the API key is static.
+From auth-broker 3.0.0 `tokenRefresher.refreshToken()` always obtains a new
+token (2.x could return the one the server had just refused), so a
+connection that calls it after a 401 no longer risks a 401 loop. The broker
+constructor lost its second (`browser`) argument and `tokenProvider` is now
+`provider`; see auth-broker's CHANGELOG, *Migrating from 2.2.0*.
 
 ## Services
 
@@ -151,8 +143,9 @@ Escape embedded single quotes by doubling them: `"name eq 'O''Reilly'"`.
 
 ## Errors
 
-Every failure from `CalmConnection.makeRequest()` and from resource handlers
-is a `CalmApiError`:
+Every failure a resource handler raises is a `CalmApiError`; an
+`ICalmConnection` implementation can build one from an error body with
+`calmErrorFromBody`:
 
 ```ts
 import { CalmApiError, CALM_API_ERROR_CODES } from '@mcp-abap-adt/calm-client';
@@ -182,34 +175,10 @@ Codes: `ODATA_ERROR`, `HTTP_ERROR`, `NOT_FOUND`, `JSON_PARSE`, `NETWORK`,
 returned an empty collection) — distinct from transport-level
 `HTTP_ERROR` with status 404.
 
-## Service route overrides
-
-`CalmConnection` ships defaults seeded from the Rust reference implementation
-(`mcp-abap-adt-interfaces/src/connection/CalmService.ts` +
-`src/connection/serviceRoutes.ts`). Override for tenant-specific paths:
-
-```ts
-new CalmConnection({
-  baseUrl: '…',
-  tokenRefresher,
-  serviceRoutes: {
-    features: '/custom/features/v2',   // overrides default
-    // others keep defaults
-  },
-});
-```
-
-`apiPrefix` can also be overridden if your tenant exposes Cloud ALM on a
-non-standard prefix:
-
-```ts
-new CalmConnection({ baseUrl: '…', tokenRefresher, apiPrefix: '' });
-```
-
 ## Testing
 
-- Unit tests (`src/__tests__/unit/`) — pure-function, no I/O. 13 suites,
-  109 tests.
+- Unit tests (`src/__tests__/unit/`) — pure-function, no I/O. 12 suites,
+  93 tests.
   ```bash
   npm run test
   ```
@@ -236,7 +205,7 @@ npm run build
 
 # 4. Unit tests (no credentials required, always runs)
 npm run test
-# → 13 suites, 109 tests; integration suites self-skip with a single notice
+# → 12 unit suites, 93 tests; integration suites self-skip with a single notice
 ```
 
 ### Running integration tests
@@ -257,7 +226,7 @@ Scope-gated via env flags (matches the `@mcp-abap-adt` ecosystem):
 
 ```bash
 CALM_LOG_LEVEL=debug          # error | warn | info | debug (default info)
-DEBUG_CALM_CONNECTORS=true    # CalmConnection retries, 401 refresh, URLs
+DEBUG_CALM_CONNECTORS=true    # test connection: URLs, token requests
 DEBUG_CALM_LIBS=true          # resource-client internals
 DEBUG_CALM_TESTS=true         # test execution progress
 ```
@@ -284,16 +253,12 @@ the ecosystem.
 High level:
 
 ```
-consumer → CalmClient → handlers → ICalmConnection → CalmConnection (axios)
-                                                       ├─ ITokenRefresher ─→ AuthBroker
-                                                       └─ DEFAULT_CALM_SERVICE_ROUTES
+consumer → CalmClient → handlers → ICalmConnection (supplied by the consumer)
 ```
 
-- Handlers depend only on `ICalmConnection` — the concrete `CalmConnection`
-  is a convenience; swap in any implementation for tests or alternate
-  transports.
-- `CalmConnection` handles Bearer/APIKey injection, 401/403 retry, and
-  OData/HTTP/Network error translation to `CalmApiError`.
+- Handlers depend only on `ICalmConnection`; the concrete connection —
+  transport, Bearer/API-key header, 401 retry, service routes — belongs to
+  the consumer (for example `@mcp-abap-adt/calm-server`).
 - No MCP-server code in this library — consumers wrap it into their own
   MCP servers if desired.
 

@@ -1,5 +1,39 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+
+- **`@mcp-abap-adt/interfaces-auth` is no longer a peer dependency** (it was
+  `^1.2.0`). No file this package publishes imports it — `dist/` names
+  neither `ITokenRefresher` nor any other auth type since the connection moved
+  out in 0.4.0 — so the peer range only told consumers which major to install.
+  Under the `auth-broker` 3 family, which needs `interfaces-auth` 2.1, that
+  instruction conflicted with the consumer's own tree. Dropping it asks
+  nothing of any consumer; a consumer that builds a connection with a token
+  refresher declares `interfaces-auth` itself. It stays a dev dependency
+  (`^2.0.1`) for the integration-test connection, whose `ITokenRefresher` is
+  unchanged in 2.x.
+
+- **Dev dependencies move to the new auth family** —
+  `@mcp-abap-adt/auth-broker@^3.0.0` (was `^2.1.0`),
+  `@mcp-abap-adt/auth-providers@^4.2.0` (was `^2.2.0`),
+  `@mcp-abap-adt/auth-stores@^1.2.3` (was `^1.2.0`). The install now holds one
+  copy each of `interfaces-auth` (2.1.0), `interfaces-auth-sap` (1.0.1) and
+  `interfaces-utils` (1.1.0). The broker and providers declare
+  `engines: ^22 || ^24`, so development here wants Node.js 22 or 24; the
+  published package keeps `engines.node >=18`, since none of its runtime
+  dependencies or peers requires more.
+
+### Documentation
+
+- README and `docs/` no longer describe `CalmConnection`, which left this
+  package in 0.4.0: the connection, its auth header and its 401 retry are the
+  consumer's. The README shows wiring a token refresher with the auth-broker
+  3.x constructor (`{ sessionStore, serviceKeyStore?, provider }`, no
+  `browser` argument) and notes that `refreshToken()` now always obtains a new
+  token.
+
 ## [0.7.0] - 2026-09-24
 
 ### Changed

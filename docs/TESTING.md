@@ -12,11 +12,15 @@ npm run test
 npx jest --runInBand src/__tests__/unit
 ```
 
-13 suites, 109 tests covering:
+Node.js: the package itself runs on Node.js 18+, but `npm install` in this
+repository now pulls `@mcp-abap-adt/auth-broker` 3.x and `auth-providers` 4.x
+(dev dependencies), which declare `engines: ^22 || ^24` — use Node.js 22 or 24
+for development (npm only warns on another version unless `engine-strict` is set).
+
+12 suites, 93 tests covering:
 - `ODataQuery` — query-string construction, RFC 3986 encoding, canonical param order.
 - `CalmApiError` — factory methods, prototype chain, cause propagation.
-- `serviceRoutes` — all 9 `CalmService` keys present, no `/api` prefix baked in, 1:1 parity with Rust `config.rs`.
-- `CalmConnection` — construction guards, URL composition, auth injection, 401 retry, error translation.
+- `calmErrorFromBody` — OData / HTTP error-body classification into `CalmApiError`.
 - 9 handlers (Features, Documents, TestCase, Hierarchy, Analytics, ProcessMonitoring, Tasks, Projects, Log) — tested against a mock `ICalmConnection`.
 
 ## Layer 2 — Integration tests (`src/__tests__/integration/`)
@@ -101,7 +105,7 @@ Scope-gated via env flags (matches the `@mcp-abap-adt/adt-clients` pattern):
 
 ```bash
 CALM_LOG_LEVEL=debug              # log level (error|warn|info|debug, default: info)
-DEBUG_CALM_CONNECTORS=true        # CalmConnection: retries, 401 refresh, URLs
+DEBUG_CALM_CONNECTORS=true        # test connection: URLs, token requests
 DEBUG_CALM_LIBS=true              # resource-client internals
 DEBUG_CALM_TESTS=true             # test execution progress
 ```
