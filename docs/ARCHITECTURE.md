@@ -48,10 +48,10 @@ The functional scope was migrated from the Rust project `sap-cloud-alm-odata-mcp
 |---|---|
 | `@mcp-abap-adt/interfaces-calm` | Cloud ALM's own contracts: `ICalmConnection`, `CalmService`, `CALM_SERVICES`, `ICalmRequestOptions`, `ICalmResponse`. |
 | `@mcp-abap-adt/interfaces-auth` | `ITokenRefresher` — used by connection implementations and by this repository's integration-test connection; not a peer dependency. |
-| `@mcp-abap-adt/interfaces-utils` | `ILogger`. |
-| `@mcp-abap-adt/auth-providers` | `ClientCredentialsProvider` (XSUAA OAuth2) and other token providers. |
-| `@mcp-abap-adt/auth-stores` | `XsuaaServiceKeyStore`, `XsuaaSessionStore`, `SafeXsuaaSessionStore`. |
-| `@mcp-abap-adt/auth-broker` | `AuthBroker` (3.x: `{ sessionStore, serviceKeyStore?, provider }`) — orchestrates provider + stores, creates `ITokenRefresher`. |
+| `@mcp-abap-adt/interfaces-utils` | `ILogger` — used by this repository's test helpers; not a peer dependency. |
+| `@mcp-abap-adt/auth-providers` | `ClientCredentialsProvider` (XSUAA OAuth2) and other token providers. The consumer's, for its connection; not a dependency of this package. |
+| `@mcp-abap-adt/auth-stores` | `XsuaaServiceKeyStore`, `XsuaaSessionStore`, `SafeXsuaaSessionStore`. The consumer's, for its connection; not a dependency of this package. |
+| `@mcp-abap-adt/auth-broker` | `AuthBroker` (3.x: `{ sessionStore, serviceKeyStore?, provider }`) — orchestrates provider + stores, creates `ITokenRefresher`. The consumer's, for its connection; not a dependency of this package. |
 | **`@mcp-abap-adt/calm-client`** (this) | `CalmClient`, `calmErrorFromBody`, `core/*` resource clients, `ODataQuery`, `CalmApiError`. |
 
 No auth package — implementation or contract — is imported by the published code. A consumer wires `AuthBroker` once and injects the resulting `ITokenRefresher` into its own connection.

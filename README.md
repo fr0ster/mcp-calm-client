@@ -22,15 +22,14 @@ package.
 npm install @mcp-abap-adt/calm-client
 ```
 
-Peer dependencies — the contracts, each from the package that declares it:
+One peer dependency — the contract every module imports:
 
 ```bash
 npm install @mcp-abap-adt/interfaces-calm   # ^1.0.1  ICalmConnection, CalmService, ICalmRequestOptions, ICalmResponse
-npm install @mcp-abap-adt/interfaces-utils  # ^1.1.0  ILogger
 ```
 
-`@mcp-abap-adt/interfaces-auth` is **no longer a peer dependency** (it was
-`^1.2.0` up to 0.7.0). No file this package publishes refers to it, so it
+`@mcp-abap-adt/interfaces-auth` and `@mcp-abap-adt/interfaces-utils` are
+**no longer peer dependencies** (they were `^1.2.0` and `^1.1.0` up to 0.7.0). No file this package publishes refers to either, so they
 only told consumers which major to install — and a consumer on the
 `auth-broker` 3 family, which needs `interfaces-auth` 2.1, got a conflicting
 instruction. Whoever builds the connection declares the auth contract it
